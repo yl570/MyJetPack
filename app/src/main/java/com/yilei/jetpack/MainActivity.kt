@@ -1,15 +1,18 @@
 package com.yilei.jetpack
 
 
-import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import androidx.fragment.app.Fragment
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import com.yilei.jetpack.databinding.ActivityMainBinding
+import com.yilei.jetpack.fragment.FirstFragment
+import com.yilei.jetpack.fragment.SecondFragment
 
 
 class MainActivity : AppCompatActivity() {
@@ -18,13 +21,48 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val fragments= listOf(FirstFragment(),SecondFragment())
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.bottomNavigation.itemIconTintList=null
         binding.bottomNavigation.setOnItemSelectedListener { item: MenuItem ->
             //changeIcon(item.itemId)
+            var position=0
+            when(item.itemId){
+                R.id.navigation_home -> {
+                    position=0
+                }
+                R.id.navigation_search -> {
+                    position=1
+                }
+            }
+            binding.viewPager.currentItem = position
             return@setOnItemSelectedListener true
         }
+        val pagerAdapter = object : FragmentStateAdapter(this) {
+            override fun getItemCount(): Int {
+                return fragments.size
+            }
+
+            override fun createFragment(position: Int): Fragment {
+                return fragments[position]
+            }
+        }
+        binding.viewPager.setAdapter(pagerAdapter)
+
+        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                when(position){
+                    0 -> {
+                        binding.bottomNavigation.selectedItemId=R.id.navigation_home
+                    }
+                    1 -> {
+                        binding.bottomNavigation.selectedItemId=R.id.navigation_search
+                    }
+                }
+            }
+        })
         val badge = binding.bottomNavigation.getOrCreateBadge(R.id.navigation_search)
         badge.maxNumber = 99
         // 设置数字
@@ -39,41 +77,5 @@ class MainActivity : AppCompatActivity() {
 //            insets
 //        }
     }
-    private fun changeIcon(id:Int){
-        val ids= intArrayOf(R.id.navigation_home,R.id.navigation_search,R.id.navigation_profile)
-        for (i in ids){
-            if (i!=id){
-                setUnselectedIcon(id)
-            }else{
-                setSelectedIcon(id)
-            }
-        }
-    }
-    private fun setUnselectedIcon(id: Int){
-        when(id){
-            R.id.navigation_home -> {
-                binding.bottomNavigation.menu.findItem(R.id.navigation_home).setIcon(R.drawable.ic_home)
-            }
-            R.id.navigation_search -> {
-                binding.bottomNavigation.menu.findItem(R.id.navigation_search).setIcon(R.drawable.ic_search)
-            }
-            R.id.navigation_profile -> {
-                binding.bottomNavigation.menu.findItem(R.id.navigation_profile).setIcon(R.drawable.ic_profile)
-            }
-        }
-    }
-    private fun setSelectedIcon(id: Int){
-        when(id){
-            R.id.navigation_home -> {
-                Log.d("TAG", "setSelectedIcon: navigation_home")
-                binding.bottomNavigation.menu.findItem(R.id.navigation_home).setIcon(R.drawable.ic_home_selected)
-            }
-            R.id.navigation_search -> {
-                binding.bottomNavigation.menu.findItem(R.id.navigation_search).setIcon(R.drawable.ic_search_selected)
-            }
-            R.id.navigation_profile -> {
-                binding.bottomNavigation.menu.findItem(R.id.navigation_profile).setIcon(R.drawable.ic_profile_selected)
-            }
-        }
-    }
+
 }
